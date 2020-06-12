@@ -30,11 +30,13 @@ There are 137 QTL and 101 Case-control datasets. Some of these need to be combin
 - Combine autosome and x chromosome files
 - (sex stratified) files are tar.gz. They have a separate file per chromosome within the tarball, and have different column names. Perhaps just ignore these files?
 
+Note that some of the files are `tar.gz` files, some are `gz`, some tarballs have pairs of gz files, one has a csv file. This script tries to organise all of it.
+
 ```
 Rscript organise_phenotypes.r
 ```
 
-This creates the `/data/dir/ready/input.csv` file, and the `wgetlist.txt` file. The latter is a set of wget commands for downloading the selected files.
+This creates the `/data/dir/ready/input.csv` as well as organising the files into `ready/`
 
 ## Run pipeline
 
