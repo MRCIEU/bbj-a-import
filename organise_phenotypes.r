@@ -4,16 +4,16 @@ library(jsonlite)
 library(parallel)
 library(data.table)
 
-is_tar <- function(fn)
-{
-	a <- try(fread(fn, he=T, nrow=1000))
-	if('try-error' %in% class(a))
-	{
-		return(TRUE)
-	} else {
-		return(FALSE)
-	}
-}
+# is_tar <- function(fn)
+# {
+# 	a <- try(fread(fn, he=T, nrow=1000))
+# 	if('try-error' %in% class(a))
+# 	{
+# 		return(TRUE)
+# 	} else {
+# 		return(FALSE)
+# 	}
+# }
 
 is_tar <- function(fn)
 {
@@ -112,11 +112,11 @@ for(i in 1:length(tocombine))
 	message(i)
 	x <- subset(a, gwasid == tocombine[i])
 	print(x$Study)
-	# combine_dat(
-	# 	file.path(config$datadir, "dl", x$filename[1]), 
-	# 	file.path(config$datadir, "dl", x$filename[2]),
-	# 	file.path(config$datadir, "dl", paste0(tocombine[i], ".txt.gz"))
-	# )
+	combine_dat(
+		file.path(config$datadir, "dl", x$filename[1]), 
+		file.path(config$datadir, "dl", x$filename[2]),
+		file.path(config$datadir, "dl", paste0(tocombine[i], ".txt.gz"))
+	)
 	a$filename[a$gwasid == tocombine[i]] <- paste0(tocombine[i], ".txt.gz")
 }
 
@@ -229,6 +229,30 @@ a[["se_col"]][index] <- 7
 a[["pval_col"]][index] <- 8
 a[["delimiter"]][index] <- "space"
 
+
+# Need to manually fix some of these files
+
+# These files have no standard errors:
+a <- subset(a, !filename %in% c("cc25.txt.gz", "cc27.txt.gz"))
+
+cols <- fread("cols.txt")
+for(i in 1:nrow(cols))
+{
+	j <- a$filename == cols$filename[i]
+	a$snp_col[j] <- cols$snp_col[i]
+	a$chr_col[j] <- cols$chr_col[i]
+	a$pos_col[j] <- cols$pos_col[i]
+	a$ea_col[j] <- cols$ea_col[i]
+	a$oa_col[j] <- cols$oa_col[i]
+	a$eaf_col[j] <- cols$eaf_col[i]
+	a$beta_col[j] <- cols$beta_col[i]
+	a$se_col[j] <- cols$se_col[i]
+	a$pval_col[j] <- cols$pval_col[i]
+	a$delimiter[j] <- cols$delimiter[i]
+}
+
+
+
 b <- subset(a, select=c(chr_col, pos_col, oa_col, ea_col, snp_col, eaf_col, beta_col, se_col, pval_col, sex, category, subcategory, unit, population, group_name, build, author, year, trait, pmid, id, sample_size, ncase, ncontrol, filename, header, delimiter, mr))
 
 dir.create(file.path(config$datadir, "ready"))
@@ -251,6 +275,35 @@ temp <- mclapply(1:nrow(b), function(i)
 	system2("/bin/bash", args = c("-c", shQuote(cmd)), stdout=TRUE) %>% as.numeric() %>% {. - 1}
 }, mc.cores=16) %>% unlist()
 b$nsnp <- temp
+
+
+
+readcheck <- mclapply(1:nrow(b), function(i)
+{
+	message(i, ": ", b$id[i], " ", b$filename[i])
+	x <- b[i,]
+	sep <- switch(x$delimiter, tab = "\t", space = " ", comma=",")
+	a <- fread(file.path(config$datadir, "ready", b$filename[i]), he=x$header, nrow=100, sep=sep)
+	cols <- c("chr_col", "pos_col", "oa_col", "ea_col", "snp_col", "eaf_col", "beta_col", "se_col", "pval_col")
+	l <- try({lapply(cols, function(j)
+	{
+		a[[x[[j]]+1]]
+	})
+	})
+	if('try-error' %in% class(l))
+	{
+		return(FALSE)
+	}
+	names(l) <- cols
+	l <- bind_rows(l)
+	print(str(l))
+	return(TRUE)
+}, mc.cores=16)
+
+b1 <- b
+b1$readcheck <- unlist(readcheck)
+b1 <- subset(b1, !readcheck)
+print(nrow(b1))
 
 write.csv(b, file="input.csv")
 write.csv(b, file=file.path(config$datadir, "ready", "input.csv"))
