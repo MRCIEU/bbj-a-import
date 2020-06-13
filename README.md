@@ -1,8 +1,8 @@
-# Import Japan Biobank GWAS
+# Import Biobank Japan GWAS
 
 Data downloaded from here: http://jenger.riken.jp/en/result
 
-The `jbb-a-metadata.csv` is created manually from the HTML tables on that page.
+The `bbj-a-metadata.csv` is created manually from the HTML tables on that page.
 
 ## Define data location
 

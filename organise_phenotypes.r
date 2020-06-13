@@ -75,7 +75,7 @@ sort_tar <- function(file1, file2)
 
 config <- read_json('config.json')
 
-a <- read.csv("jbb-a-metadata.csv", stringsAsFactors=FALSE)
+a <- read.csv("bbj-a-metadata.csv", stringsAsFactors=FALSE)
 a <- subset(a, !is.na(X...newid))
 a <- subset(a, !grepl("sex stratified", Study))
 
@@ -83,7 +83,7 @@ a$filename <- ""
 a$filename[a$X...newid <= 70] <- paste0("qtl", a$ID[a$X...newid <= 70], ".txt.gz")
 a$filename[a$X...newid > 70] <- paste0("cc", a$ID[a$X...newid > 70], ".txt.gz")
 
-a$gwasid <- paste0("jbb-a-", a$X...newid)
+a$gwasid <- paste0("bbj-a-", a$X...newid)
 a$sample.size <- a$sample.size %>% gsub(",","",.) %>% as.numeric()
 a$case <- a$case %>% strsplit(., " ") %>% sapply(., function(x) x[1]) %>% gsub(",","",.) %>% as.numeric
 a$ctrl <- a$ctrl %>% strsplit(., " ") %>% sapply(., function(x) x[1]) %>% gsub(",","",.) %>% as.numeric
@@ -174,8 +174,8 @@ a$sample_size <- a$sample.size
 a$ncase <- a$case
 a$ncontrol <- a$ctrl
 
-# jbb-a-76 is a csv for some reason
-x <- subset(a, gwasid == "jbb-a-76")
+# bbj-a-76 is a csv for some reason
+x <- subset(a, gwasid == "bbj-a-76")
 file1 <- file.path(config$datadir, "dl", x$filename)
 ft <- paste0(file1, "temp")
 dir.create(ft)
@@ -217,7 +217,7 @@ a[["beta_col"]][index] <- 6
 a[["se_col"]][index] <- 7
 a[["pval_col"]][index] <- 8
 
-index <- a$gwasid == "jbb-a-76"
+index <- a$gwasid == "bbj-a-76"
 a[["snp_col"]][index] <- 0
 a[["chr_col"]][index] <- 1
 a[["pos_col"]][index] <- 2
