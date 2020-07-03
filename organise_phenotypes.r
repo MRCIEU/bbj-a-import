@@ -15,11 +15,11 @@ library(data.table)
 # 	}
 # }
 
-is_tar <- function(fn)
+is_tar <- function(fn, td=tempdir())
 {
-	cmd <- paste0("zcat ", fn, " | head -n 1000 > ~/tem")
+	cmd <- paste0("zcat ", fn, " | head -n 1000 > ", td, "/tem")
 	system(cmd)
-	cmd <- paste0("file -b ~/tem")
+	cmd <- paste0("file -b ", td, "/tem")
 	o <- system(cmd, intern=TRUE)
 	print(o)
 	return(grepl("tar", o))
@@ -230,6 +230,19 @@ a[["pval_col"]][index] <- 8
 a[["delimiter"]][index] <- "space"
 
 
+index <- a$gwasid == "bbj-a-76"
+a[["snp_col"]][index] <- 0
+a[["chr_col"]][index] <- 1
+a[["pos_col"]][index] <- 2
+a[["ea_col"]][index] <- 3
+a[["oa_col"]][index] <- 4
+a[["eaf_col"]][index] <- 5
+a[["beta_col"]][index] <- 6
+a[["se_col"]][index] <- 7
+a[["pval_col"]][index] <- 8
+a[["delimiter"]][index] <- "space"
+
+
 # Need to manually fix some of these files
 
 # These files have no standard errors:
@@ -239,6 +252,7 @@ cols <- fread("cols.txt")
 for(i in 1:nrow(cols))
 {
 	j <- a$filename == cols$filename[i]
+	print(which(j))
 	a$snp_col[j] <- cols$snp_col[i]
 	a$chr_col[j] <- cols$chr_col[i]
 	a$pos_col[j] <- cols$pos_col[i]
